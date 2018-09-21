@@ -45,18 +45,18 @@ public class MainActivity extends AppCompatActivity {
         loadView();
 //        Thread myThread = new Thread(new MyServerThread());
 //        myThread.start();
-        UIHandler = new Handler();
+        //UIHandler = new Handler();
 
-        this.Thread1 = new Thread(new Thread1());
-        this.Thread1.start();
+        //this.Thread1 = new Thread(new Thread1());
+        //this.Thread1.start();
 
         //new readData().execute("http://192.168.4.1/mestrado/edit");
         enviarComando.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MessageSender messageSender = new MessageSender();
-                messageSender.execute(et_dataComando.getText().toString());
-
+                //MessageSender messageSender = new MessageSender();
+                //messageSender.execute(et_dataComando.getText().toString());
+                tryHTTP("http://192.168.4.1/aqua/"+et_dataComando.getText().toString());
             }
         });
 
@@ -83,8 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     @Override
                     public void onResponse(String response) {
-                        // response
-
+                        et_data.setText(response);
                     }
                 },
                 new Response.ErrorListener()
