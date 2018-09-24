@@ -1,6 +1,7 @@
 package com.raiff.aquameter;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.os.AsyncTask;
@@ -42,12 +43,18 @@ public class GraficoActivity extends AppCompatActivity implements OnChartGesture
 
     private LineChart mChart;
     private ProgressDialog pd;
+    public String data;
+    public final static String MESSAGE_KEY = "com.raiff.aquameter.message_key";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_grafico);
-        //File file = new File(context.getFilesDir(), filename);
+
+        Intent intent = getIntent();
+        data = intent.getStringExtra(MESSAGE_KEY);
+
 
         mChart = (LineChart) findViewById(R.id.graf_graf1);
         mChart.setOnChartGestureListener(this);
@@ -127,8 +134,9 @@ public class GraficoActivity extends AppCompatActivity implements OnChartGesture
 
         // add data
 //        setData(100, 100);
-        new JsonTask().execute("http://192.168.4.1/mestrado/edit");
-
+//        MainActivity mainActivity = new MainActivity();
+//        editData(mainActivity.getEditData());
+        editData(data);
 //        mChart.setVisibleXRange(20);
 //        mChart.setVisibleYRange(20f, AxisDependency.LEFT);
 //        mChart.centerViewTo(20, 50, AxisDependency.LEFT);
@@ -144,6 +152,10 @@ public class GraficoActivity extends AppCompatActivity implements OnChartGesture
 
         // // dont forget to refresh the drawing
          mChart.invalidate();
+    }
+
+    public void setData(String data){
+        this.data = data;
     }
 
     @Override
@@ -308,104 +320,27 @@ public class GraficoActivity extends AppCompatActivity implements OnChartGesture
         return true;
     }
 
-    private class JsonTask extends AsyncTask<String, String, String> {
+    private void editData(String result){
+        String buffer = "";
+        int i = 0;
+        ArrayList<Entry> values = new ArrayList<Entry>();
 
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            pd = new ProgressDialog(GraficoActivity.this);
-            pd.setMessage("Favor Esperar! Baixando dados do dispositivo");
-            pd.setCancelable(false);
-            pd.show();
-        }
-
-        protected String doInBackground(String... params) {
-
-
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
-
-            try {
-                URL url = new URL(params[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
-
-
-                InputStream stream = connection.getInputStream();
-
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line+"\n");
-                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
-                }
-                //Log.d("Ver se funfa: ", buffer.cep.toString());   //here u ll get whole response...... :-)
-
-                return buffer.toString();
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-//        txtJson.setText(result);
-//        int index1 = result.indexOf(":[");
-//        int index2 = result.indexOf("]}");
-//        result = result.substring(index1+2,index2);
-            String buffer = "";
-            int i = 0;
-            ArrayList<Entry> values = new ArrayList<Entry>();
-
-            for(char res : result.toCharArray()){
-                if(res != ',')
-                    buffer += res;
-                else{
-                    //Log.d("Valores Partidos: ", buffer);
+        for(char res : result.toCharArray()){
+            if(res != ',')
+                buffer += res;
+            else{
+                //Log.d("Valores Partidos: ", buffer);
 //                    addEntry(Float.parseFloat(buffer)/10);
-                    values.add(new Entry(i, Float.parseFloat(buffer)));
-                    i++;
-                    buffer = "";
-                }
+                values.add(new Entry(i, Float.parseFloat(buffer)));
+                i++;
+                buffer = "";
             }
-
-            //writeToFile(result,GraficoActivity.this);
-            setData(values);
         }
+        setData(values);
     }
 
-//    private void setData(int count, float range) {
     private void setData(ArrayList<Entry> values) {
 
-//        ArrayList<Entry> values = new ArrayList<Entry>();
-
-//        for (int i = 0; i < count; i++) {
-//
-//            float val = (float) (Math.random() * range) + 3;
-////            values.add(new Entry(i, val, getResources().getDrawable(R.drawable.star)));
-//            values.add(new Entry(i, val));
-//        }
 
         LineDataSet set1;
 

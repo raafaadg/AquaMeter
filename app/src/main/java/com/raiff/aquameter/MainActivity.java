@@ -1,5 +1,6 @@
 package com.raiff.aquameter;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     TextView enviarComando;
     TextView receberComando;
+    TextView receberComandoCont;
+    TextView grafico;
     private EditText et_dataComando;
     private EditText et_data;
     Handler UIHandler;
@@ -36,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int SERVERPORT = 80;
     public static final String SERVERIP = "192.168.1.4";
-
+    public final static String MESSAGE_KEY = "com.raiff.aquameter.message_key";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,16 +66,47 @@ public class MainActivity extends AppCompatActivity {
         receberComando.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                tryHTTP("http://192.168.4.1/aqua/freq");
 
             }
         });
+
+        receberComandoCont.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tryHTTP("http://192.168.4.1/aqua/liga");
+
+                startActivity(new Intent(MainActivity.this, ReadloopActivity.class));
+            }
+        });
+        grafico.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, GraficoActivity.class)
+                .putExtra(MESSAGE_KEY,getEditData()
+                ));
+                new GraficoActivity().setData(getEditData());
+            }
+        });
+        tryHTTP("http://192.168.4.1/aqua/des");
+    }
+
+    public String getEditData(){
+        return et_data.getText().toString();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        tryHTTP("http://192.168.4.1/aqua/liga");
     }
 
     private void loadView() {
         enviarComando = findViewById(R.id.enviarComando);
         receberComando = findViewById(R.id.receberComando);
+        receberComandoCont = findViewById(R.id.receberComandoCont);
         et_data = findViewById(R.id.et_data);
         et_dataComando = findViewById(R.id.et_dataComando);
+        grafico = findViewById(R.id.grafico);
     }
 
     public void tryHTTP(String url){

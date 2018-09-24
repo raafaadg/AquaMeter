@@ -31,10 +31,17 @@
         android:layout_height="wrap_content" />
 
     <TextView
-        android:id="@+id/receberComandoCont"
+        android:id="@+id/grafico"
         style="@style/CategoryStyle"
-        android:background="#091dfd"
+        android:background="#fd096f"
         android:layout_marginBottom="20dp"
-        android:text="Receber Dados Continuamente" />
+        android:text="Grafico" />
+
+    <TextView
+    android:id="@+id/receberComandoCont"
+    style="@style/CategoryStyle"
+    android:background="#787368"
+    android:layout_marginBottom="20dp"
+    android:text="Receber Dados Continuamente" />
 
 </LinearLayout>
