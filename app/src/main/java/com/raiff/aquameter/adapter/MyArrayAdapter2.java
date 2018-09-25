@@ -47,6 +47,7 @@ public class MyArrayAdapter2 extends ArrayAdapter<MyDataModel2> {
 
         vh.tv_id.setText(item.getId());
         vh.tv_time.setText(item.getTime());
+        vh.tv_gps.setText(item.getGps());
         vh.tv_data.setText(item.getData());
 
 
@@ -58,26 +59,31 @@ public class MyArrayAdapter2 extends ArrayAdapter<MyDataModel2> {
 
         public final TextView tv_id;
         public final TextView tv_time;
+        public final TextView tv_gps;
         public final TextView tv_data;
 
         private ViewHolder(RelativeLayout rootView,
                            TextView tv_id,
                            TextView tv_time,
+                           TextView tv_gps,
                            TextView tv_data) {
             this.rootView = rootView;
             this.tv_id = tv_id;
             this.tv_time = tv_time;
+            this.tv_gps = tv_gps;
             this.tv_data = tv_data;
         }
 
         public static ViewHolder create(RelativeLayout rootView) {
             TextView tv_id = (TextView) rootView.findViewById(R.id.tv_id);
             TextView tv_time = (TextView) rootView.findViewById(R.id.tv_time);
+            TextView tv_gps = (TextView) rootView.findViewById(R.id.tv_gps);
             TextView tv_data = (TextView) rootView.findViewById(R.id.tv_data);
 
             return new ViewHolder(rootView,
                     tv_id,
                     tv_time,
+                    tv_gps,
                     tv_data);
         }
     }

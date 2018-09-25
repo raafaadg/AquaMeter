@@ -52,7 +52,7 @@ public class ReadloopActivity extends AppCompatActivity implements ArquivoDialog
         listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(adapter);
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+/*        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Snackbar.make(findViewById(R.id.parentLayout),
@@ -60,7 +60,7 @@ public class ReadloopActivity extends AppCompatActivity implements ArquivoDialog
                                 list.get(position).getData()
                         , Snackbar.LENGTH_LONG).show();
             }
-        });
+        });*/
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -78,7 +78,7 @@ public class ReadloopActivity extends AppCompatActivity implements ArquivoDialog
 
     public void openDialog(){
         ArquivoDialog arquivoDialog = new ArquivoDialog();
-        arquivoDialog.show(getSupportFragmentManager(), "Salvar nome do Arquivo");
+        arquivoDialog.show(getSupportFragmentManager(), "Loop Dados");
     }
 
     @Override

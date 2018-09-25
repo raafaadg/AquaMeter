@@ -54,7 +54,8 @@ public class ReadBD extends AppCompatActivity {
                 Snackbar.make(findViewById(R.id.parentLayout),
                         list.get(position).getId() + " => " +
                                 list.get(position).getTime() + " => " +
-                        list.get(position).getData() + " => "
+                                list.get(position).getGps() + " => " +
+                        list.get(position).getData()
                         , Snackbar.LENGTH_LONG).show();
                 startActivity(new Intent(ReadBD.this, GraficoActivity.class)
                         .putExtra(MESSAGE_KEY,list.get(position).getData()
@@ -85,6 +86,11 @@ public class ReadBD extends AppCompatActivity {
                             controle++;
                             break;
                         case 2:
+                            model.setGps(buffer);
+                            buffer = "";
+                            controle++;
+                            break;
+                        case 3:
                             model.setData(buffer);
                             buffer = "";
                             controle = 0;

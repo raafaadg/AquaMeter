@@ -18,6 +18,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public final String TABLE_NAME = "Dados";
     public final String COLUMN_ID = "DadosID";
     public final String COLUMN_TIME = "DadosTime";
+    public final String COLUMN_GPS = "DadosGPS";
     public final String COLUMN_DATA = "DadosCont";
     //initialize the database
     public MyDBHandler(Context context, String nome, SQLiteDatabase.CursorFactory factory, int version) {
@@ -30,7 +31,8 @@ public class MyDBHandler extends SQLiteOpenHelper {
                 TABLE_NAME + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                 COLUMN_TIME + " TEXT," +
-                COLUMN_DATA + " LONG" + ")";
+                COLUMN_GPS + " TEXT," +
+                COLUMN_DATA + " TEXT" + ")";
          db.execSQL(CREATE_TABLE);
         Log.v("logSQL","CRIANDO A PORRA DO BD");
     }
@@ -50,7 +52,8 @@ public class MyDBHandler extends SQLiteOpenHelper {
                 TABLE_NAME + "(" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                 COLUMN_TIME + " TEXT," +
-                COLUMN_DATA + " LONG" + ")";
+                COLUMN_GPS + " TEXT," +
+                COLUMN_DATA + " TEXT" + ")";
         db.execSQL(CREATE_TABLE);
         db.execSQL(CREATE_TABLE);
         //createEmpty();
@@ -66,6 +69,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
         if(icount<=0)
             addHandler(new Dados(
                     date.toString(),
+                    "0",
                     "0"
             ));
     }
@@ -80,14 +84,14 @@ public class MyDBHandler extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(query, null);
         while (cursor.moveToNext()) {
             int result_0 = cursor.getInt(0);
-
             String result_1 = cursor.getString(1);
-
             String result_2 = cursor.getString(2);
+            String result_3 = cursor.getString(3);
 
             result += String.valueOf(result_0) + ";" +
                     result_1 + ";" +
-                    result_2 + ";";
+                    result_2 + ";" +
+                    result_3 + ";";
             results.add(result);
             result = "";
         }
@@ -99,6 +103,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public void addHandler(Dados dados) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_TIME, dados.getDadosTime());
+        values.put(COLUMN_GPS, dados.getDadosGPS());
         values.put(COLUMN_DATA, dados.getDadosCont());
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TABLE_NAME, null, values);
@@ -113,9 +118,9 @@ public class MyDBHandler extends SQLiteOpenHelper {
         Dados dados = new Dados();
         if (cursor.moveToFirst()) {
             cursor.moveToFirst();
-            //dados.setDadosID(Integer.parseInt(cursor.getString(0)));
             dados.setDadosTime(cursor.getString(1));
-            dados.setDadosCont(cursor.getString(2));
+            dados.setDadosGPS(cursor.getString(2));
+            dados.setDadosCont(cursor.getString(3));
             cursor.close();
         } else {
             dados = null;
@@ -163,6 +168,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         //values.put(COLUMN_ID, dados.getDadosID());
         values.put(COLUMN_TIME, dados.getDadosTime());
+        values.put(COLUMN_GPS, dados.getDadosGPS());
         values.put(COLUMN_DATA, dados.getDadosCont());
         return db.update(TABLE_NAME, values, COLUMN_ID + "=" + 1, null) > 0;
     }

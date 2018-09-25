@@ -4,6 +4,7 @@ public class MyDataModel2 {
 
     private String id;
     private String time;
+    private String gps;
     private String data;
 
 
@@ -22,6 +23,14 @@ public class MyDataModel2 {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public String getGps() {
+        return gps;
+    }
+
+    public void setGps(String gps) {
+        this.gps = gps;
     }
 
     public String getData() {
