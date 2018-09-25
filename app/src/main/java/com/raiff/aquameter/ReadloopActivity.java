@@ -1,14 +1,15 @@
 package com.raiff.aquameter;
 
-import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -23,15 +24,9 @@ import com.android.volley.toolbox.Volley;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.raiff.aquameter.adapter.MyArrayAdapter;
 import com.raiff.aquameter.model.MyDataModel;
-
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
 
-public class ReadloopActivity extends AppCompatActivity {
+public class ReadloopActivity extends AppCompatActivity implements ArquivoDialogListener{
 
     Handler UIHandler;
     Thread thread = null;
@@ -39,15 +34,11 @@ public class ReadloopActivity extends AppCompatActivity {
     private ListView listView;
     private ArrayList<MyDataModel> list;
     private MyArrayAdapter adapter;
+    public CoordinatorLayout coordinatorLayout;
 
-    public static final int SERVERPORT = 80;
-    public static final String SERVERIP = "192.168.1.4";
     public boolean controlThread = true;
-    String messageStr="send";
     int cont = 1;
-    private static final int UDP_SERVER_PORT = 4200;
-    private static final int MAX_UDP_DATAGRAM_LEN = 10;
-
+    int amostragem = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,30 +52,38 @@ public class ReadloopActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(adapter);
 
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(ReadloopActivity.this,
-                        "SEGUROU o item " + String.valueOf(position),
-                        Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        });
-
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Snackbar.make(findViewById(R.id.parentLayout),
                         list.get(position).getTitle() + " => " +
-                                list.get(position).getData() + " => "
+                                list.get(position).getData()
                         , Snackbar.LENGTH_LONG).show();
             }
         });
 
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(@NonNull View view) {
+                openDialog();
+            }
+        });
+
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_read);
+
         controlThread = true;
         runThread();
+    }
 
+    public void openDialog(){
+        ArquivoDialog arquivoDialog = new ArquivoDialog();
+        arquivoDialog.show(getSupportFragmentManager(), "Salvar nome do Arquivo");
+    }
+
+    @Override
+    public void applyTexts(int amostragem) {
+        this.amostragem = amostragem;
     }
 
     private void runThread() {
@@ -110,7 +109,7 @@ public class ReadloopActivity extends AppCompatActivity {
                                 //new ClientSendAndListen().run();
                             }
                         });
-                        Thread.sleep(1000);
+                        Thread.sleep(1000/amostragem);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -131,7 +130,6 @@ public class ReadloopActivity extends AppCompatActivity {
                         model.setTitle(String.valueOf(cont++));
                         model.setData(response);
                         list.add(model);
-
                         adapter.notifyDataSetChanged();
                     }
                 },
@@ -141,7 +139,6 @@ public class ReadloopActivity extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
                         // error
                         Log.v("online",error.toString());
-
                     }
                 }
         );
@@ -168,4 +165,5 @@ public class ReadloopActivity extends AppCompatActivity {
         tryHTTP("http://192.168.4.1/aqua/des");
 
     }
+
 }

@@ -42,7 +42,6 @@ public class GraficoActivity extends AppCompatActivity implements OnChartGesture
         OnChartValueSelectedListener {
 
     private LineChart mChart;
-    private ProgressDialog pd;
     public String data;
     public final static String MESSAGE_KEY = "com.raiff.aquameter.message_key";
 
@@ -378,9 +377,7 @@ public class GraficoActivity extends AppCompatActivity implements OnChartGesture
 
             // set data
             mChart.setData(data);
-            if (pd.isShowing()){
-                pd.dismiss();
-            }
+
         }
     }
 

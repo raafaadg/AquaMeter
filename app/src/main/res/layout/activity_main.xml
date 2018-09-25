@@ -1,47 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:layout_margin="16sp">
 
-    <TextView
-        android:id="@+id/enviarComando"
-        style="@style/CategoryStyle"
-        android:background="#FD8E09"
-        android:layout_marginBottom="20dp"
-        android:text="Enviar Comando" />
-
-    <EditText
-        android:id="@+id/et_dataComando"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_margin="16sp">
 
-    <TextView
-        android:id="@+id/receberComando"
-        style="@style/CategoryStyle"
-        android:background="#091dfd"
-        android:layout_marginBottom="20dp"
-        android:text="Receber Dado" />
+        <!--TextView
+            android:id="@+id/enviarComando"
+            style="@style/CategoryStyle"
+            android:background="#FD8E09"
+            android:layout_marginBottom="20dp"
+            android:text="Enviar Comando" />
 
-    <EditText
-        android:id="@+id/et_data"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/et_dataComando"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" /-->
 
-    <TextView
-        android:id="@+id/grafico"
-        style="@style/CategoryStyle"
-        android:background="#fd096f"
-        android:layout_marginBottom="20dp"
-        android:text="Grafico" />
+        <TextView
+            android:id="@+id/receberComando"
+            style="@style/CategoryStyle"
+            android:background="#091dfd"
+            android:layout_marginBottom="20dp"
+            android:text="Receber Dado" />
 
-    <TextView
-    android:id="@+id/receberComandoCont"
-    style="@style/CategoryStyle"
-    android:background="#787368"
-    android:layout_marginBottom="20dp"
-    android:text="Receber Dados Continuamente" />
+        <EditText
+            android:id="@+id/et_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/grafico"
+            style="@style/CategoryStyle"
+            android:background="#fd096f"
+            android:layout_marginBottom="20dp"
+            android:text="Grafico" />
+
+        <TextView
+            android:id="@+id/receberComandoCont"
+            style="@style/CategoryStyle"
+            android:background="#787368"
+            android:layout_marginBottom="20dp"
+            android:text="Receber Dados Continuamente" />
+
+        <TextView
+            android:id="@+id/BD"
+            style="@style/CategoryStyle"
+            android:background="#133308"
+            android:layout_marginBottom="20dp"
+            android:text="Abrir BD" />
+        <TextView
+            android:id="@+id/delete_db"
+            style="@style/CategoryStyle"
+            android:background="#133308"
+            android:layout_marginBottom="20dp"
+            android:text="Deletar BD" />
+
+    </LinearLayout>
+</ScrollView>

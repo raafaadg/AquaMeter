@@ -83,7 +83,7 @@ public class TCPActivity extends AppCompatActivity{
     }
 
     private void loadView() {
-        enviarComando = findViewById(R.id.enviarComando);
+        //enviarComando = findViewById(R.id.enviarComando);
         receberComando = findViewById(R.id.receberComando);
         et_data = findViewById(R.id.et_data);
     }
