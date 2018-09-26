@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -15,7 +14,6 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -34,17 +32,34 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import jxl.Workbook;
+import jxl.WorkbookSettings;
+import jxl.write.Label;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,15 +69,16 @@ public class MainActivity extends AppCompatActivity {
     TextView grafico;
     TextView bd;
     TextView delete_db;
+    TextView gsheet;
     //private EditText et_dataComando;
     private EditText et_data;
     public MyDBHandler dbHandler;
     String GPS = "";
-    double latitude, longitude;
     private LocationManager locationManager;
     private LocationListener listener;
-    Location location;
     LocationListener locationListener;
+    private static final int REQUEST_CODE = 3132;
+
 
 
     public final static String MESSAGE_KEY = "com.raiff.aquameter.message_key";
@@ -130,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 tryHTTP("http://192.168.4.1/aqua/freq");
+                creatXlsx("amostras");
 
             }
         });
@@ -138,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 tryHTTP("http://192.168.4.1/aqua/liga");
-
                 startActivity(new Intent(MainActivity.this, ReadloopActivity.class));
             }
         });
@@ -164,6 +180,12 @@ public class MainActivity extends AppCompatActivity {
                         .deleteTable();
                 Toast.makeText(MainActivity.this, "Banco Deletado", Toast.LENGTH_LONG)
                         .show();
+            }
+        });
+        gsheet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new SendRequest().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         });
 
@@ -195,9 +217,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-
-
-
     }
 
     private void addData(String data) {
@@ -213,13 +232,6 @@ public class MainActivity extends AppCompatActivity {
         Dados dados = new Dados(Calendar.getInstance().getTime().toString(),GPS,data);
         dbHandler.addHandler(dados);
 
-//        GPSTracker gps = new GPSTracker (this);
-//        double latitude = gps.getLatitude();
-//        double longitude= gps.getLongitude();
-//        Toast.makeText(
-//                MainActivity.this,
-//                latitude + " " + longitude,
-//                Toast.LENGTH_SHORT).show();
     }
 
     public String getEditData(){
@@ -241,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
         grafico = findViewById(R.id.grafico);
         bd = findViewById(R.id.BD);
         delete_db = findViewById(R.id.delete_db);
+        gsheet = findViewById(R.id.gsheet);
     }
 
     public void tryHTTP(String url){
@@ -271,8 +284,6 @@ public class MainActivity extends AppCompatActivity {
         queue.add(putRequest);
     }
 
-//    private boolean isLocationEnabled()
-//        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
     private void showAlert() {
         final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -295,7 +306,8 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    /*private void creatXlsx(ArrayList<String> vals, String nomeArquivo){
+    private void creatXlsx(String nomeArquivo){
+
         if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // Asking for permission
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
@@ -307,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
 
         String csvFile = nomeArquivo+".xls";
 
-        File directory = new File(sd.getAbsolutePath(),"LOGS");
+        File directory = new File(sd.getAbsolutePath(),"AMOSTRAS");
         //create directory if not exist
         if (!directory.isDirectory()) {
             directory.mkdirs();
@@ -316,72 +328,194 @@ public class MainActivity extends AppCompatActivity {
 
             //file path
             File file = new File(directory, csvFile);
+            boolean f = file.delete();
             WorkbookSettings wbSettings = new WorkbookSettings();
             wbSettings.setLocale(new Locale("pt", "BR"));
             WritableWorkbook workbook = Workbook.createWorkbook(file, wbSettings);
             //Excel sheet name. 0 represents first sheet
             WritableSheet sheet = workbook.createSheet("userList", 0);
             // column and row
-            sheet.addCell(new Label(0, 0, "Nome"));
-            sheet.addCell(new Label(1, 0, "Idade"));
-            sheet.addCell(new Label(2, 0, "Peso"));
-            sheet.addCell(new Label(3, 0, "Genero"));
-            sheet.addCell(new Label(4, 0, "Email"));
-            sheet.addCell(new Label(5, 0, "Dados"));
-            // if (cursor.moveToFirst()) {
-            //do {
-            cursor.moveToFirst();
-            String nome = cursor.getString(cursor.getColumnIndex(db.COLUMN_NOME));
-            String idade = cursor.getString(cursor.getColumnIndex(db.COLUMN_IDADE));
-            String peso = cursor.getString(cursor.getColumnIndex(db.COLUMN_PESO));
-            String genero = cursor.getString(cursor.getColumnIndex(db.COLUMN_GENERO));
-            String email = cursor.getString(cursor.getColumnIndex(db.COLUMN_EMAIL));
+            sheet.addCell(new Label(0, 0, "ID"));
+            sheet.addCell(new Label(1, 0, "TimeStamp"));
+            sheet.addCell(new Label(2, 0, "GPS"));
+            sheet.addCell(new Label(3, 0, "DATA"));
 
-            int i = cursor.getPosition() + 1;
-            sheet.addCell(new Label(0, i, nome));
-            sheet.addCell(new Label(1, i, idade));
-            sheet.addCell(new Label(2, i, peso));
-            sheet.addCell(new Label(3, i, genero));
-            sheet.addCell(new Label(4, i, email));
-            int c = 0, r= 0, cont = 0;
-
-            for(String result : vals) {
-                sheet.addCell(new Label(5 + c, i + r, result));
-                r++;
-                if(r == 60000){
-                    r = 0;
-                    c++;
+            ArrayList<String> dados = db.loadHandler();
+            int i = 1;
+            for(String aux : dados){
+                Log.e("aux", aux);
+                String buffer = "";
+                int controle = 0;
+                for(char res : aux.toCharArray()) {
+                    if(res != ';')
+                        buffer += res;
+                    else{
+                        switch (controle) {
+                            case 0:
+                                sheet.addCell(new Label(0, i, buffer));
+                                buffer = "";
+                                controle++;
+                                break;
+                            case 1:
+                                sheet.addCell(new Label(1, i, buffer));
+                                buffer = "";
+                                controle++;
+                                break;
+                            case 2:
+                                sheet.addCell(new Label(2, i, buffer));
+                                buffer = "";
+                                controle++;
+                                break;
+                            case 3:
+                                sheet.addCell(new Label(3, i, buffer));
+                                buffer = "";
+                                controle = 0;
+                                i++;
+                                break;
+                        }
+                    }
                 }
-                Log.v("ValsXLS","Columns = "+ String.valueOf(c)+" Row = "+
-                        String.valueOf(r+(c*60000)));
-                //}
-                //} //while (cursor.moveToNext());
             }
-            //closing cursor
+
             cursor.close();
             workbook.write();
             workbook.close();
             Toast.makeText(getApplication(),
-                    "Data Exported in a Excel Sheet", Toast.LENGTH_SHORT).show();
+                    "Dado Salvo no EXCEL", Toast.LENGTH_SHORT).show();
 
         } catch(Exception e){
             e.printStackTrace();
-        }finally {
-            if (pd.isShowing()){
-                pd.dismiss();
-            }
         }
-    }*/
+    }
+
+    public class SendRequest extends AsyncTask<Void, Void, String> {
+
+
+        protected void onPreExecute(){
+            Log.v("PreExec","Entrou na pré execução");
+            Thread.currentThread().setPriority(THREAD_PRIORITY_BACKGROUND + THREAD_PRIORITY_MORE_FAVORABLE);
+        }
+
+        protected String doInBackground(Void... resultss) {
+
+            String retorno = "";
+            try{
+                URL url = new URL("https://script.google.com/macros/s/" +
+                        "AKfycbzzhOLiYVBXcJ-SKmbUsdhVXRKqHd4iczOaUQ3jSLxzHgKU9Cfy/exec");
+                JSONObject postDataParams = new JSONObject();
+
+                String id = "1pJmWLNTwpPbB_qLE3KqukWVZuGiYw-I7yGieUEf9QxA";
+
+                ArrayList<String> result = new ArrayList<String>();
+                String buffer = "";
+
+                HttpURLConnection conn;
+
+                MyDBHandler db = new MyDBHandler(getBaseContext(),null,null,1);
+                ArrayList<String> dados = db.loadHandler();
+                for(String results : dados) {
+                    for (char res : results.toCharArray()) {
+                        if (res != ';')
+                            buffer += res;
+                        else {
+                            result.add(buffer);
+                            buffer = "";
+                        }
+                    }
+
+                    postDataParams.put("id", id);
+                    postDataParams.put("id2", result.get(0));
+                    postDataParams.put("time", result.get(1));
+                    postDataParams.put("gps", result.get(2));
+                    postDataParams.put("data", result.get(3));
+                    result.clear();
+                    result = new ArrayList<String>();
+
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setReadTimeout(15000 /* milliseconds */);
+                    conn.setConnectTimeout(15000 /* milliseconds */);
+                    conn.setRequestMethod("POST");
+                    conn.setDoInput(true);
+                    conn.setDoOutput(true);
+
+                    OutputStream os = conn.getOutputStream();
+                    BufferedWriter writer = new BufferedWriter(
+                            new OutputStreamWriter(os, "UTF-8"));
+                    writer.write(getPostDataString(postDataParams));
+
+                    writer.flush();
+                    writer.close();
+                    os.close();
+
+                    int responseCode = conn.getResponseCode();
+
+                    if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+                        BufferedReader in=new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        StringBuffer sb = new StringBuffer("");
+                        String line="";
+
+                        while((line = in.readLine()) != null) {
+
+                            sb.append(line);
+                            break;
+                        }
+
+                        in.close();
+                        retorno = sb.toString();
+                        return sb.toString();
+
+                    }
+                    else {
+                        return new String("false : "+responseCode);
+                    }
+                }
+
+            }
+            catch(Exception e){
+                return new String("Exception: " + e.getMessage());
+            }
+            return retorno;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public String getPostDataString(JSONObject params) throws Exception {
+
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        Iterator<String> itr = params.keys();
+
+        while(itr.hasNext()){
+
+            String key= itr.next();
+            Object value = params.get(key);
+
+            if (first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode(key, "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
+
+        }
+        return result.toString();
+    }
+
 
     public class MyLocationListener implements LocationListener {
 
         @Override
         public void onLocationChanged(Location loc) {
             GPS = "";
-            Toast.makeText(
-                    getBaseContext(),
-                    "Location changed: Lat: " + loc.getLatitude() + " Lng: "
-                            + loc.getLongitude(), Toast.LENGTH_SHORT).show();
             String longitude = "Long:" + loc.getLongitude();
             Log.v("GPS", longitude);
             String latitude = "Lati:" + loc.getLatitude();

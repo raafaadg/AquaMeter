@@ -54,15 +54,21 @@
         <TextView
             android:id="@+id/BD"
             style="@style/CategoryStyle"
-            android:background="#133308"
+            android:background="#13a124"
             android:layout_marginBottom="20dp"
             android:text="Abrir BD" />
         <TextView
             android:id="@+id/delete_db"
             style="@style/CategoryStyle"
-            android:background="#133308"
+            android:background="#9c8d17"
             android:layout_marginBottom="20dp"
             android:text="Deletar BD" />
+        <TextView
+            android:id="@+id/gsheet"
+            style="@style/CategoryStyle"
+            android:background="#133308"
+            android:layout_marginBottom="20dp"
+            android:text="Enviar para GoogleSheet" />
 
     </LinearLayout>
 </ScrollView>
