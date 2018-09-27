@@ -61,7 +61,7 @@ import jxl.write.WritableWorkbook;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ArquivoDialogListener {
 
     //TextView enviarComando;
     TextView receberComando;
@@ -70,10 +70,12 @@ public class MainActivity extends AppCompatActivity {
     TextView bd;
     TextView delete_db;
     TextView gsheet;
+    TextView mergebd;
     //private EditText et_dataComando;
     private EditText et_data;
     public MyDBHandler dbHandler;
     String GPS = "";
+    int controleBD;
     private LocationManager locationManager;
     private LocationListener listener;
     LocationListener locationListener;
@@ -185,7 +187,13 @@ public class MainActivity extends AppCompatActivity {
         gsheet.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new SendRequest().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                openDialog();
+            }
+        });
+        mergebd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, SheetAPIActivity.class));
             }
         });
 
@@ -254,6 +262,7 @@ public class MainActivity extends AppCompatActivity {
         bd = findViewById(R.id.BD);
         delete_db = findViewById(R.id.delete_db);
         gsheet = findViewById(R.id.gsheet);
+        mergebd = findViewById(R.id.mergebd);
     }
 
     public void tryHTTP(String url){
@@ -266,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(String response) {
                         if (aux.contains("freq")) {
                             addData(response);
+//                            new SendRequest().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                             et_data.setText(response);
                         }
                     }
@@ -283,7 +293,6 @@ public class MainActivity extends AppCompatActivity {
 
         queue.add(putRequest);
     }
-
 
     private void showAlert() {
         final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -388,6 +397,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void openDialog(){
+        MyDBHandler db = new MyDBHandler(getBaseContext(),null,null,1);
+        ArrayList<String> dados = db.loadHandler();
+
+        ArquivoDialogSheet arquivoDialogSheet = new ArquivoDialogSheet();
+        arquivoDialogSheet.hint = "Delecione um ID do BD entre 1 e " + dados.size();
+        arquivoDialogSheet.show(getSupportFragmentManager(), "ID Dados BD");
+    }
+
+    @Override
+    public void applyTexts(int controleBD) {
+        this.controleBD = controleBD;
+        new SendRequest().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     public class SendRequest extends AsyncTask<Void, Void, String> {
 
 
@@ -409,11 +433,12 @@ public class MainActivity extends AppCompatActivity {
                 ArrayList<String> result = new ArrayList<String>();
                 String buffer = "";
 
-                HttpURLConnection conn;
-
                 MyDBHandler db = new MyDBHandler(getBaseContext(),null,null,1);
                 ArrayList<String> dados = db.loadHandler();
-                for(String results : dados) {
+                if(controleBD > dados.size())
+                    return "Valor de ID inválido";
+                String results = dados.get(controleBD-1);
+//                for(String results : dados) {
                     for (char res : results.toCharArray()) {
                         if (res != ';')
                             buffer += res;
@@ -431,7 +456,7 @@ public class MainActivity extends AppCompatActivity {
                     result.clear();
                     result = new ArrayList<String>();
 
-                    conn = (HttpURLConnection) url.openConnection();
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setReadTimeout(15000 /* milliseconds */);
                     conn.setConnectTimeout(15000 /* milliseconds */);
                     conn.setRequestMethod("POST");
@@ -462,20 +487,17 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         in.close();
-                        retorno = sb.toString();
                         return sb.toString();
 
                     }
                     else {
                         return new String("false : "+responseCode);
                     }
-                }
-
+//                }
             }
             catch(Exception e){
                 return new String("Exception: " + e.getMessage());
             }
-            return retorno;
         }
 
         @Override

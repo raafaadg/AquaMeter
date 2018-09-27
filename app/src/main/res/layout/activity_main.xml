@@ -69,6 +69,12 @@
             android:background="#133308"
             android:layout_marginBottom="20dp"
             android:text="Enviar para GoogleSheet" />
+        <TextView
+            android:id="@+id/mergebd"
+            style="@style/CategoryStyle"
+            android:background="#a9280b"
+            android:layout_marginBottom="20dp"
+            android:text="Sincronizar BD e Sheet" />
 
     </LinearLayout>
 </ScrollView>
